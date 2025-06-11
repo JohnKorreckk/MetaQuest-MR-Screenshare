@@ -1,0 +1,5 @@
+C:/Users/PMQE/MetaQuest-MR-Screenshare/.utmp/RelWithDebInfo/4l435w1g/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/PMQE/MetaQuest-MR-Screenshare/.utmp/RelWithDebInfo/4l435w1g/arm64-v8a/CMakeFiles/rebuild_cache.dir
+C:/Users/PMQE/MetaQuest-MR-Screenshare/.utmp/RelWithDebInfo/4l435w1g/arm64-v8a/GameActivity/CMakeFiles/game.dir
+C:/Users/PMQE/MetaQuest-MR-Screenshare/.utmp/RelWithDebInfo/4l435w1g/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+C:/Users/PMQE/MetaQuest-MR-Screenshare/.utmp/RelWithDebInfo/4l435w1g/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
