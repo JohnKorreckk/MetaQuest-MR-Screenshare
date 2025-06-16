@@ -29,7 +29,8 @@ public class LobbyScreenManager : MonoBehaviour
 
     void onJoinMeetingButtonPressed()
     {
-        string meetingID = meetingIdInput.text.Trim();
+        // string meetingID = meetingIdInput.text.Trim();
+        string meetingID = "Hello";
         GUIManager.Instance.OnJoinMeetingRequested(meetingID);
     }
 }
