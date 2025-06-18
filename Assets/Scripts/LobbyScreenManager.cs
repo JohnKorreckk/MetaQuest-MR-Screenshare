@@ -24,13 +24,15 @@ public class LobbyScreenManager : MonoBehaviour
 
     void onCreateMeetingButtonPressed()
     {
+        UnityEngine.Debug.Log(System.String.Format("Create Button Pressed"));
         GUIManager.Instance.OnCreateMeetingRequested();
     }
 
     void onJoinMeetingButtonPressed()
     {
+        UnityEngine.Debug.Log(System.String.Format("Join Button Pressed"));
         // string meetingID = meetingIdInput.text.Trim();
-        string meetingID = "Hello";
+        string meetingID = "00LNgq74XUE03BfklbWK";
         GUIManager.Instance.OnJoinMeetingRequested(meetingID);
     }
 }
