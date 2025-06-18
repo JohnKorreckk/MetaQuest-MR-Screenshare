@@ -10794,7 +10794,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 229010500}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20f436fab7ff60343a8d29aa8b70b8ad, type: 3}
   m_Name: 
@@ -12650,6 +12650,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fbfcc353edec2a4e9e44127316d198a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  previewCube: {fileID: 229010500}
   LobbyScreen: {fileID: 1964602097}
   RoomScreen: {fileID: 1977275713}
 --- !u!114 &332593636
