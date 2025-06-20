@@ -1,6 +1,7 @@
 using TMPro;
-using UnityEngine.UI;
+using Unity.WebRTC;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LobbyScreenManager : MonoBehaviour
 {
@@ -32,7 +33,7 @@ public class LobbyScreenManager : MonoBehaviour
     {
         UnityEngine.Debug.Log(System.String.Format("Join Button Pressed"));
         // string meetingID = meetingIdInput.text.Trim();
-        string meetingID = "UYVwXEfG4t1tl02H4LeB";
+        string meetingID = "J5S2yyKJN6F91o6Ki7bt";
         StartCoroutine(GUIManager.Instance.OnJoinMeetingRequested(meetingID));
     }
 }

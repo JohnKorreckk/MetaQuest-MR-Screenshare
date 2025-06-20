@@ -38,6 +38,12 @@ public static class TaskExtensions
 
 public class GUIManager : MonoBehaviour
 {
+    // Add this inspector field for your TextMeshPro UI element
+    [SerializeField] private TextMeshProUGUI debugLogText;
+
+    // Internal queue for messages
+    private Queue<string> debugMessages = new Queue<string>();
+    private int maxDebugLines = 20;
 
     public GameObject previewCube;
 
@@ -87,6 +93,7 @@ public class GUIManager : MonoBehaviour
     // Initialize Passthrough Camera video feed
     WebCamTextureManager webCamTextureManager = null;
     WebCamTexture webCamTexture = null;
+    private RenderTexture bgraRT;
 
     private void Awake()
     {
@@ -103,7 +110,6 @@ public class GUIManager : MonoBehaviour
 
     private IEnumerator Start()
     {
-
         Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
 
             // Initiate Firebase
@@ -114,8 +120,6 @@ public class GUIManager : MonoBehaviour
                 // Create and hold a reference to FirebaseApp
                 app = Firebase.FirebaseApp.DefaultInstance;
                 firestore = FirebaseFirestore.DefaultInstance;
-
-                // StartCoroutine(DeferredInit());
             }
             else
             {
@@ -124,16 +128,8 @@ public class GUIManager : MonoBehaviour
             }
         });
 
-
         // Set the peer connection
         pc = new RTCPeerConnection(ref config);
-        UnityEngine.Debug.LogError(System.String.Format("Successfully set peer connection"));
-
-
-
-
-
-        UnityEngine.Debug.LogError(System.String.Format("Searching/set WebCamTexture"));
 
         do
         {
@@ -149,29 +145,63 @@ public class GUIManager : MonoBehaviour
             }
         } while (webCamTexture == null);
 
-        // Apply local stream to Cube object
-        var renderer = previewCube.GetComponent<Renderer>();
-        renderer.material.mainTexture = webCamTexture;
+        // 1. Get supported format and create RT
+        var format = WebRTC.GetSupportedRenderTextureFormat(SystemInfo.graphicsDeviceType);
+        bgraRT = new RenderTexture(webCamTexture.width, webCamTexture.height, 0, format);
+        bgraRT.Create();
 
-        // Add passthrough video to localStream
+        // 2. Create VideoStreamTrack from RenderTexture
+        var videoTrack = new VideoStreamTrack(bgraRT);
+
+        // 3. Create MediaStream and add track
         localStream = new MediaStream();
-        localStream.AddTrack(new VideoStreamTrack(webCamTexture));
+        localStream.AddTrack(videoTrack);
 
+        // 4. Add tracks to peer connection
         foreach (var track in localStream.GetTracks())
         {
             pc.AddTrack(track, localStream);
-            UnityEngine.Debug.LogError(System.String.Format("Successfully added track to peerconnection"));
+            LogOnScreen("Added track to peerConnection");
         }
 
-        // remoteStream = new MediaStream();
+        // Initiate local and remote streams
+        localStream = new MediaStream();
+        localStream.AddTrack(new VideoStreamTrack(bgraRT));
+        remoteStream = new MediaStream();
+
+        // Push tracks from local stream to peer connection
+        foreach (var track in localStream.GetTracks())
+        {
+            pc.AddTrack(track, localStream);
+            LogOnScreen("Added track to peerConnection");
+        }
+
+        // Keep a reference to the renderer
+        var renderer = previewCube.GetComponent<Renderer>();
+
+        pc.OnTrack = e =>
+        {
+            var track = e.Receiver.Track;
+
+            try
+            {
+                if (track is VideoStreamTrack videoTrack)
+                {
+                    videoTrack.OnVideoReceived += (Texture texture) =>
+                    {
+                        renderer.material.mainTexture = texture;
+                        LogOnScreen("Added texture");
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                LogOnScreen("Error adding texture", ex);
+            }
+
+        };
 
         ShowLobbyScreen();
-    }
-
-    private IEnumerator DeferredInit()
-    {
-        yield return null;
-        StartCoroutine(OnJoinMeetingRequested("00LNgq74XUE03BfklbWK"));
     }
 
     public void ShowLobbyScreen()
@@ -342,4 +372,52 @@ public class GUIManager : MonoBehaviour
             return null;
         }
     }
+    public void LogOnScreen(string message)
+    {
+        if (debugMessages.Count >= maxDebugLines)
+        {
+            debugMessages.Dequeue();
+        }
+        debugMessages.Enqueue(message);
+        debugLogText.text = string.Join("\n", debugMessages);
+    }
+    public void LogOnScreen(string message, Exception ex)
+    {
+        string fullMessage = $"{message}: {ex.Message}\n{ex.StackTrace}";
+        LogOnScreen(fullMessage);
+    }
+
+    RenderTexture ConvertToBGRA(WebCamTexture source)
+    {
+        var rt = new RenderTexture(source.width, source.height, 0, RenderTextureFormat.BGRA32);
+        rt.Create();
+
+        // Copy WebCamTexture pixels into the RenderTexture
+        Graphics.Blit(source, rt);
+
+        return rt;
+    }
+
+    void Update()
+    {
+        if (webCamTexture != null)
+        {
+            if (!webCamTexture.isPlaying)
+            {
+                webCamTexture.Play();
+            }
+            else
+            {
+                LogOnScreen("WebCamTexture frame: " + webCamTexture.GetPixels32().Length);
+            }
+        }
+
+        if (webCamTexture != null && bgraRT != null)
+        {
+            Graphics.Blit(webCamTexture, bgraRT);
+        }
+
+        WebRTC.Update();
+    }
+
 }
